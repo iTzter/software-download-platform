@@ -1,170 +1,101 @@
-# 📥 منصة تحميل البرامج
+# Software Download Portal (Next.js + Supabase)
 
-منصة شاملة لتحميل البرامج والتعريفات مع لوحة تحكم إدارية كاملة ونظام دعم عملاء متكامل.
+A fresh, production-ready starter for a **Software Download Portal** with a modern dark UI, Supabase Auth, Storage uploads, and an admin dashboard.
 
-## ✨ المميزات
+## Full Folder Structure
 
-- 🖥️ **موقع تحميل برامج احترافي** - واجهة سهلة الاستخدام لتحميل البرامج المختلفة
-- 🔐 **نظام أكواد الدعوة** - التحكم الكامل في الوصول من خلال أكواس محددة المدة
-- 🎛️ **لوحة تحكم إدارية** - إدارة شاملة للبرامج والفئات والدعاوي
-- 📁 **إدارة الفئات** - إنشاء وتعديل وحذف فئات البرامج
-- 💻 **إدارة البرامج** - إضافة تفاصيل كاملة للبرامج (الإصدار، الحجم، الوسوم، الرابط)
-- 🎫 **نظام الدعاوي** - تقديم طلبات دعم وإدارتها من قبل الإدارة
-- 🌙 **واجهة جميلة** - تصميم حديث وسهل الاستخدام
+```text
+.
+├─ app/
+│  ├─ (site)/
+│  │  ├─ category/[slug]/page.tsx
+│  │  ├─ software/[id]/page.tsx
+│  │  └─ page.tsx
+│  ├─ admin/
+│  │  ├─ (dashboard)/
+│  │  │  ├─ categories/page.tsx
+│  │  │  └─ software/page.tsx
+│  │  └─ login/page.tsx
+│  ├─ api/revalidate/route.ts
+│  ├─ globals.css
+│  └─ layout.tsx
+├─ components/
+│  ├─ admin/
+│  │  ├─ software-form.tsx
+│  │  ├─ stats-cards.tsx
+│  │  └─ visibility-toggle.tsx
+│  ├─ home/
+│  │  ├─ featured-slider.tsx
+│  │  ├─ hero-section.tsx
+│  │  └─ latest-grid.tsx
+│  └─ ui/
+│     ├─ button.tsx
+│     └─ input.tsx
+├─ lib/
+│  ├─ actions/admin.ts
+│  ├─ supabase/client.ts
+│  ├─ supabase/server.ts
+│  └─ utils.ts
+├─ supabase/schema.sql
+├─ types/database.ts
+├─ next.config.ts
+├─ tailwind.config.ts
+├─ tsconfig.json
+└─ package.json
+```
 
-## 🛠️ التقنيات
+## Supabase SQL Schema
 
-- **Backend**: Node.js + Express.js
-- **Frontend**: HTML5 + CSS3 + Vanilla JavaScript
-- **Database**: SQLite
-- **Authentication**: JWT
+Run the full SQL in:
 
-## 📋 المتطلبات
+- `supabase/schema.sql`
 
-- Node.js (الإصدار 14 فما فوق)
-- npm
+This includes:
+- `categories` and `software` tables exactly as requested.
+- `admin_users` mapping table for role checks.
+- RLS policies so public users can read and only admins can write.
+- Storage bucket setup for `files` and `images` + policies.
 
-## 🚀 البدء
+## Core Upload Logic (Server Action)
 
-### 1. تثبيت المتطلبات
+Main implementation is in:
+
+- `lib/actions/admin.ts`
+
+`uploadSoftwareAction` workflow:
+1. Validates input with `zod`.
+2. Uploads binary file to Supabase bucket `files`.
+3. Uploads thumbnail image to Supabase bucket `images`.
+4. Retrieves public URLs from storage.
+5. Inserts final software row into `software` table.
+6. Revalidates homepage and admin list pages.
+
+## Main UI Components
+
+### Homepage
+- `components/home/hero-section.tsx` → Hero + search bar.
+- `components/home/featured-slider.tsx` → Featured software cards.
+- `components/home/latest-grid.tsx` → Latest software grid.
+- Used in `app/(site)/page.tsx`.
+
+### Admin Dashboard
+- `components/admin/software-form.tsx` → Upload form + featured/hidden toggles.
+- `components/admin/visibility-toggle.tsx` → instant hide/show switch.
+- `components/admin/stats-cards.tsx` → total downloads and software count.
+- Used in `app/admin/(dashboard)/software/page.tsx`.
+
+## Environment Variables
+
+Create `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+## Development
 
 ```bash
 npm install
-```
-
-### 2. بدء الخادم
-
-```bash
-npm start
-```
-
-أو للتطوير مع إعادة تحميل تلقائي:
-
-```bash
 npm run dev
 ```
-
-### 3. الوصول للموقع
-
-- **الموقع الرئيسي**: http://localhost:3000
-- **لوحة التحكم**: http://localhost:3000/admin
-
-## 👨‍💼 إعداد حساب المسؤول
-
-عند البدء الأول، يجب إنشاء حساب مسؤول:
-
-```bash
-curl -X POST http://localhost:3000/api/admin/setup
-```
-
-**بيانات المسؤول الافتراضية:**
-- اسم المستخدم: `admin`
-- كلمة المرور: `admin123`
-
-⚠️ **تنبيه أمان**: غيّر كلمة المرور والمفتاح السري في الملقم فوراً في بيئة الإنتاج!
-
-## 📱 الاستخدام
-
-### للمستخدمين العاديين
-
-1. ادخل إلى الموقع
-2. أدخل كود الدعوة (يتم الحصول عليه من الإدارة)
-3. تصفح البرامج والفئات المختلفة
-4. حمّل البرامج المطلوبة
-5. استخدم نظام الدعم الفني عند الحاجة
-
-### للمسؤولين
-
-1. ادخل إلى لوحة التحكم
-2. استخدم بيانات المسؤول
-3. **إدارة الفئات**:
-   - أضف فئات جديدة
-   - عدّل الفئات الموجودة
-   - احذف الفئات غير المستخدمة
-
-4. **إدارة البرامج**:
-   - أضف برامج مع كل التفاصيل
-   - حدّث معلومات البرامج
-   - احذف البرامج
-
-5. **إدارة أكواس الدعوة**:
-   - أنشئ أكواد جديدة
-   - حدّد مدة صلاحية كل كود
-   - تتبع استخدام الأكواد
-
-6. **إدارة الدعاوي**:
-   - اعرض جميع الدعاوي المرسلة
-   - رد على الدعاوي
-   - أغلق الدعاوي المحلولة
-
-## 📊 هيكل قاعدة البيانات
-
-### جداول النظام
-
-- **admins**: بيانات حسابات المسؤولين
-- **categories**: فئات البرامج
-- **software**: معلومات البرامج
-- **invitationCodes**: أكواد الدعوة
-- **tickets**: الدعاوي والطلبات
-
-## 🔒 الأمان
-
-- استخدام JWT للمصادقة
-- تجزئة كلمات المرور مع bcryptjs
-- التحقق من الأكواس المنتهية
-- حماية المسارات الإدارية
-
-## 📝 API الرئيسية
-
-### المسؤول
-
-- `POST /api/admin/login` - تسجيل الدخول
-- `POST /api/admin/setup` - إنشاء حساب مسؤول (مرة واحدة فقط)
-
-### الفئات
-
-- `GET /api/categories` - الحصول على جميع الفئات
-- `POST /api/categories` - إنشاء فئة جديدة
-- `PUT /api/categories/:id` - تعديل فئة
-- `DELETE /api/categories/:id` - حذف فئة
-
-### البرامج
-
-- `GET /api/software` - جميع البرامج
-- `GET /api/software/category/:categoryId` - برامج فئة معينة
-- `POST /api/software` - إضافة برنامج جديد
-- `PUT /api/software/:id` - تعديل برنامج
-- `DELETE /api/software/:id` - حذف برنامج
-
-### أكواس الدعوة
-
-- `POST /api/invitations/generate` - إنشاء كود جديد
-- `GET /api/invitations` - جميع الأكواد (للمسؤول فقط)
-- `POST /api/invitations/verify` - التحقق من صحة الكود
-- `POST /api/invitations/use` - استخدام الكود
-
-### الدعاوي
-
-- `POST /api/tickets` - إنشاء دعوة جديدة
-- `GET /api/tickets` - جميع الدعاوي (للمسؤول فقط)
-- `PUT /api/tickets/:id` - الرد على دعوة
-
-## 📸 لقطات الشاشة
-
-(سيتم إضافة الصور قريباً)
-
-## 🐛 المشاكل والتحسينات
-
-إذا واجهت أي مشاكل أو لديك اقتراحات، يرجى فتح issue على GitHub.
-
-## 📄 الترخيص
-
-هذا المشروع مرخص تحت رخصة MIT.
-
-## 👨‍💻 المطور
-
-تم بناؤه بـ ❤️ بواسطة iTzter
-
----
-
-**استمتع بالمنصة!** 🎉
